@@ -1,0 +1,27 @@
+{
+  "name": "accessibility_engine",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node src/server.ts"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.11.0",
+    "axios": "^1.13.2",
+    "body-parser": "^2.2.1",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "groq-sdk": "^0.37.0",
+    "playwright": "^1.57.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.3",
+    "ts-node": "^10.9.2"
+  }
+}
