@@ -22,7 +22,7 @@ export async function callGroqLLM(prompt: string): Promise<string> {
         content: prompt
       }
     ],
-    temperature: 0.2,
+    temperature: 0,
     max_tokens: 1024
   });
 

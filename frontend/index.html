@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Accessibility Engine</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>AI Accessibility Engine</h1>
+    <p class="subtitle">
+      Run Crawl, Axe & Keyboard accessibility checks using AI (POC)
+    </p>
+
+    <div class="input-box">
+      <textarea id="queryInput" placeholder="Example: run axe and keyboard"></textarea>
+      <button onclick="runAnalysis()">Run Analysis</button>
+    </div>
+
+    <div id="status"></div>
+
+    <div class="card" id="analysis"></div>
+    <div class="card" id="crawl"></div>
+    <div class="card" id="axe"></div>
+    <div class="card" id="keyboard"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

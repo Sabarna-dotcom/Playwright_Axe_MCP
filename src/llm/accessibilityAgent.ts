@@ -3,16 +3,15 @@ import path from 'path';
 import { callGroqLLM } from './llmClient';
 import { callTool } from './callTool';
 
-
 export async function handleLLMQuery(userQuery: string): Promise<any> {
-  // Ask LLM to normalize intent (crawl / axe / both)
+  // 1. Ask LLM to normalize intent (crawl / axe / keyboard / combinations)
   const actions = await detectActionsWithLLM(userQuery);
 
   if (!actions.length) {
     throw new Error('LLM could not determine any valid action');
   }
 
-  // Execute MCP tools based on intent
+  // 2. Execute MCP tools based on intent
   const toolResults: Record<string, any> = {};
 
   if (actions.includes('crawl')) {
@@ -23,13 +22,14 @@ export async function handleLLMQuery(userQuery: string): Promise<any> {
     toolResults.axe = await callTool('/tools/axe');
   }
 
-  // Ask LLM to analyze ONLY tool outputs
-  const analysis = await analyzeResultsWithLLM(
-    userQuery,
-    toolResults
-  );
+  if (actions.includes('keyboard')) {
+    toolResults.keyboard = await callTool('/tools/keyboard');
+  }
 
-  // Prepare final result
+  // 3. Ask LLM to analyze ONLY tool outputs
+  const analysis = await analyzeResultsWithLLM(userQuery, toolResults);
+
+  // 4. Prepare final result
   const finalResult = {
     query: userQuery,
     actions,
@@ -38,16 +38,17 @@ export async function handleLLMQuery(userQuery: string): Promise<any> {
     timestamp: new Date().toISOString()
   };
 
-  // Store report as JSON with timestamp
+  // 5. Store report as JSON with timestamp
   saveReport(finalResult);
 
-  // Return same result to caller
+  // 6. Return same result to caller
   return finalResult;
 }
 
+
 async function detectActionsWithLLM(
   userQuery: string
-): Promise<Array<'crawl' | 'axe'>> {
+): Promise<Array<'crawl' | 'axe' | 'keyboard'>> {
 
   const prompt = `
 You are an intent classification system.
@@ -55,23 +56,28 @@ You are an intent classification system.
 User request:
 "${userQuery}"
 
-Determine which actions are required.
+Determine which accessibility actions are required.
 
 Allowed actions:
 - crawl
 - axe
+- keyboard
 
 Rules:
-- If user wants both, return both
-- Order does not matter
+- Multiple actions may be returned
+- Order does NOT matter
 - Handle spelling mistakes and synonyms
+- If user says "full accessibility", include all
 - Do NOT explain anything
 - Return ONLY valid JSON
 
 Example outputs:
 { "actions": ["crawl"] }
 { "actions": ["axe"] }
+{ "actions": ["keyboard"] }
 { "actions": ["crawl", "axe"] }
+{ "actions": ["axe", "keyboard"] }
+{ "actions": ["crawl", "axe", "keyboard"] }
 `;
 
   const response = await callGroqLLM(prompt);
@@ -91,25 +97,33 @@ async function analyzeResultsWithLLM(
 ): Promise<string> {
 
   const prompt = `
-You are an expert web accessibility auditor.
+You are a senior web accessibility expert.
 
 User request:
 "${userQuery}"
 
-The following data was produced by automated tools.
-Analyze ONLY this data. Do NOT assume anything else.
+The following JSON data was produced by automated accessibility tools.
+You MUST analyze ONLY this data.
+Do NOT assume or invent any additional issues.
 
 === TOOL OUTPUTS (JSON) ===
 ${JSON.stringify(toolResults, null, 2)}
 
-Tasks:
-1. Summarize overall accessibility status
-2. Explain key issues in simple language
-3. Mention impacted user groups
-4. Suggest practical fixes
-5. Do NOT invent issues
+Your tasks:
+1. Identify the MOST IMPORTANT accessibility failures
+2. Explain what each issue means in simple language
+3. Mention which user groups are impacted (keyboard users, screen reader users, low vision users, etc.)
+4. Suggest clear, actionable fixes for developers
+5. Prioritize issues by severity (Critical / Serious / Moderate / Minor)
+6. If no issues exist, clearly say so
 
-Return a clear, structured explanation.
+Rules:
+- Base conclusions strictly on tool output
+- Do NOT hallucinate problems
+- Be concise but clear
+- Use bullet points where appropriate
+
+Return a structured, human-readable analysis.
 `;
 
   return await callGroqLLM(prompt);

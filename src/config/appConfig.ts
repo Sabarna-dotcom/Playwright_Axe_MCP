@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  TARGET_URL: 'https://example.com',
+  TARGET_URL: 'https://www.google.com',
 
   BASIC_AUTH: {
     enabled: false,        // set false if no auth
@@ -12,4 +12,5 @@ export const APP_CONFIG = {
     model: 'llama-3.1-8b-instant'
   },
   reportsDir: 'src/reports',
+  MCP_BASE_URL:'http://localhost:3000'
 };

@@ -1,19 +1,27 @@
 import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import { crawl } from './tools/crawl';
 import { runAxe } from './tools/axe';
+import { runKeyboard } from './tools/keyboard';
 import { handleLLMQuery } from './llm/accessibilityAgent';
 
-
-
 const app = express();
+
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
+
 const PORT = 3000;
 
 app.use(bodyParser.json());
 
 app.post('/tools/crawl', crawl);
 app.post('/tools/axe', runAxe);
+app.post('/tools/keyboard', runKeyboard);
 
 app.post('/llm/query', async (req, res) => {
   try {

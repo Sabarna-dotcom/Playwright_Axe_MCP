@@ -1,9 +1,8 @@
 import fetch from 'node-fetch';
-
-const MCP_BASE_URL = 'http://localhost:3000';
+import { APP_CONFIG } from '../config/appConfig';
 
 export async function callTool(toolPath: string): Promise<any> {
-  const response = await fetch(`${MCP_BASE_URL}${toolPath}`, {
+  const response = await fetch(`${APP_CONFIG.MCP_BASE_URL}${toolPath}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
